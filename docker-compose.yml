@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    networks:
+      - app-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=dev-file
+    ports:
+      - 8080:8080
+    command: start-dev
+    networks:
+      - app-network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: book_api
+    ports:
+      - 5000:5000
+    depends_on:
+      - mongodb
+      - keycloak
+    environment:
+      - DATABASE_URL=mongodb+srv://yomal2001:yomal2001@cluster0.ygt29af.mongodb.net/book_management?retryWrites=true&w=majority&appName=Cluster0
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=book-management
+      - KEYCLOAK_CLIENT_ID=book-api
+      - KEYCLOAK_CLIENT_SECRET=7JKq8yNB0XDLmbuJqafHLPLYKmVVD5aV
+      - PORT=5000
+    networks:
+      - app-network
+
+networks:
+  app-network:
+
+volumes:
+  mongodb_data:
