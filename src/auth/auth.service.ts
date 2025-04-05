@@ -18,7 +18,7 @@ export class AuthService {
       const realm = this.configService.get('keycloak.realm');
       const clientId = this.configService.get('keycloak.clientId');
       const clientSecret = this.configService.get('keycloak.clientSecret');
-  
+
       const response = await axios.post(
         `${keycloakUrl}/realms/${realm}/protocol/openid-connect/token`,
         new URLSearchParams({
@@ -34,14 +34,14 @@ export class AuthService {
           },
         },
       );
-  
+
       return response.data;
     } catch (error) {
       this.logger.error(
         'Login failed',
         error.response ? error.response.data : error.message,
       );
-  
+
       if (error.response) {
         const errorDescription = error.response.data.error_description;
         if (
@@ -51,7 +51,7 @@ export class AuthService {
           this.logger.error(
             'Account is not fully set up. Please verify email or complete any required actions.',
           );
-  
+
           throw new HttpException(
             {
               statusCode: HttpStatus.FORBIDDEN,
@@ -71,10 +71,10 @@ export class AuthService {
           );
         }
       }
-  
+
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
-  }  
+  }
 
   async registerUser(userData: {
     username: string;
@@ -102,6 +102,7 @@ export class AuthService {
           },
         },
       );
+      this.logger.log('Admin token response: ', tokenResponse.data);
 
       const adminToken = tokenResponse.data.access_token;
 
@@ -127,6 +128,7 @@ export class AuthService {
           },
         },
       );
+      this.logger.log('Create user response: ', createUserResponse.data); // Log response details
 
       // Get the user ID from the Location header
       const locationHeader = createUserResponse.headers.location;
@@ -160,6 +162,10 @@ export class AuthService {
       return { message: 'User registered successfully' };
     } catch (error) {
       this.logger.error('Registration failed', error);
+      if (error.response) {
+        this.logger.error('Error response data: ', error.response.data);
+        this.logger.error('Error response status: ', error.response.status);
+      }
       throw new Error('Registration failed');
     }
   }
