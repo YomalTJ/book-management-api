@@ -92,8 +92,8 @@ export class AuthService {
         `${keycloakUrl}/realms/master/protocol/openid-connect/token`,
         new URLSearchParams({
           client_id: 'admin-cli',
-          username: 'admin',
-          password: 'admin',
+          username: this.configService.get('keycloak.adminUsername') || '',
+          password: this.configService.get('keycloak.adminPassword') || '',
           grant_type: 'password',
         }),
         {
