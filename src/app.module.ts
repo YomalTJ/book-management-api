@@ -11,6 +11,8 @@ import configuration from './config/configuration';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { BooksModule } from './books/books.module';
 import { AuthModule } from './auth/auth.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -40,7 +42,9 @@ import { AuthModule } from './auth/auth.module';
     BooksModule,
     AuthModule,
   ],
+  controllers: [AppController],
   providers: [
+    AppService,
     // Global exception filter
     {
       provide: APP_FILTER,
