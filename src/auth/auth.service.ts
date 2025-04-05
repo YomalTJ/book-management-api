@@ -102,7 +102,7 @@ export class AuthService {
           },
         },
       );
-      this.logger.log('Admin token response: ', tokenResponse.data);
+      this.logger.log('Admin token response: ', tokenResponse.data); // Log token response
 
       const adminToken = tokenResponse.data.access_token;
 
@@ -128,7 +128,7 @@ export class AuthService {
           },
         },
       );
-      this.logger.log('Create user response: ', createUserResponse.data); // Log response details
+      this.logger.log('Create user response: ', createUserResponse.data); // Log the user creation response
 
       // Get the user ID from the Location header
       const locationHeader = createUserResponse.headers.location;
@@ -136,6 +136,7 @@ export class AuthService {
         locationHeader.lastIndexOf('/') + 1,
       );
 
+      // Additional update to set email as verified
       await axios.put(
         `${keycloakUrl}/admin/realms/${realm}/users/${keycloakId}`,
         {
@@ -150,7 +151,7 @@ export class AuthService {
         },
       );
 
-      // Store user in our database
+      // Store user in the local database
       const user = await this.prismaService.user.create({
         data: {
           keycloakId,
@@ -161,12 +162,24 @@ export class AuthService {
 
       return { message: 'User registered successfully' };
     } catch (error) {
-      this.logger.error('Registration failed', error);
+      this.logger.error('Registration failed with error: ', error);
+
+      // Log more specific error details if available
       if (error.response) {
-        this.logger.error('Error response data: ', error.response.data);
-        this.logger.error('Error response status: ', error.response.status);
+        this.logger.error(
+          'Error response from Keycloak: ',
+          error.response.data,
+        );
+        this.logger.error(
+          'Error status from Keycloak: ',
+          error.response.status,
+        );
       }
-      throw new Error('Registration failed');
+
+      throw new HttpException(
+        'Registration failed, please check server logs.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }
